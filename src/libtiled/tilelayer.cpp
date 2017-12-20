@@ -36,15 +36,6 @@
 
 using namespace Tiled;
 
-Cell &Cell::operator = (const Cell &other) {
-    _tileset = other._tileset;
-    _tileId = other._tileId;
-    _flags = other._flags;
-    this->clearProperties();
-    this->setProperties(other.properties());
-    return *this;
-}
-
 QRegion Chunk::region(std::function<bool (const Cell &)> condition) const
 {
     QRegion region;

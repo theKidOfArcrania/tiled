@@ -129,6 +129,15 @@ private:
     };
 };
 
+inline Cell &Cell::operator = (const Cell &other) {
+    _tileset = other._tileset;
+    _tileId = other._tileId;
+    _flags = other._flags;
+    this->clearProperties();
+    this->setProperties(other.properties());
+    return *this;
+}
+
 inline Tile *Cell::tile() const
 {
     return _tileset ? _tileset->findTile(_tileId) : nullptr;

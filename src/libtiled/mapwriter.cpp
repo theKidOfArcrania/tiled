@@ -94,6 +94,7 @@ private:
     void writeTileLayer(QXmlStreamWriter &w, const TileLayer &tileLayer);
     void writeTileLayerData(QXmlStreamWriter &w, const TileLayer &tileLayer, QRect bounds);
     void writeLayerAttributes(QXmlStreamWriter &w, const Layer &layer);
+    void writeLayerCellProperties(QXmlStreamWriter &w, const TileLayer &tileLayer);
     void writeObjectGroup(QXmlStreamWriter &w, const ObjectGroup &objectGroup);
     void writeObject(QXmlStreamWriter &w, const MapObject &mapObject);
     void writeObjectText(QXmlStreamWriter &w, const TextData &textData);
@@ -596,6 +597,9 @@ void MapWriterPrivate::writeTileLayer(QXmlStreamWriter &w,
     }
 
     w.writeEndElement(); // </data>
+
+    writeLayerCellProperties(w, tileLayer);
+
     w.writeEndElement(); // </layer>
 }
 
@@ -677,6 +681,26 @@ void MapWriterPrivate::writeLayerAttributes(QXmlStreamWriter &w,
         w.writeAttribute(QLatin1String("offsetx"), QString::number(offset.x()));
         w.writeAttribute(QLatin1String("offsety"), QString::number(offset.y()));
     }
+}
+void MapWriterPrivate::writeLayerCellProperties(QXmlStreamWriter &w,
+                                                const TileLayer &tileLayer) {
+    //TODO: different encoding types
+    w.writeStartElement(QLatin1String("tileproperties"));
+    for (int x = 0; x < tileLayer.width(); ++x) {
+        for (int y = 0; y < tileLayer.height(); ++y) {
+            Properties props = tileLayer.properties();
+            if (props.empty()) {
+                continue;
+            }
+
+            w.writeStartElement(QLatin1String("tile"));
+            w.writeAttribute(QLatin1String("x"), QString::number(x));
+            w.writeAttribute(QLatin1String("y"), QString::number(y));
+            writeProperties(w, props);
+            w.writeEndElement(); // </tile>
+        }
+    }
+    w.writeEndElement(); // </tileproperties>
 }
 
 void MapWriterPrivate::writeObjectGroup(QXmlStreamWriter &w,

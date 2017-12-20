@@ -59,16 +59,17 @@ class Tile;
 /**
  * A cell on a tile layer grid.
  */
-class Cell
+//TODO: maybe not have cell extend object because of excessive memory consumption
+class Cell : public Object
 {
 public:
-    Cell() :
+    Cell() : Object(CellType),
         _tileset(nullptr),
         _tileId(-1),
         _flags(0)
     {}
 
-    explicit Cell(Tile *tile) :
+    explicit Cell(Tile *tile) : Object(CellType),
         _tileset(tile ? tile->tileset() : nullptr),
         _tileId(tile ? tile->id() : -1),
         _flags(0)
@@ -89,6 +90,8 @@ public:
                 || _tileId != other._tileId
                 || _flags != other._flags;
     }
+
+    Cell &operator = (const Cell &other);
 
     Tileset *tileset() const { return _tileset; }
     int tileId() const { return _tileId; }

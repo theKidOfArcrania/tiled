@@ -48,7 +48,8 @@ public:
         TilesetType,
         TileType,
         WangSetType,
-        WangColorType
+        WangColorType,
+        CellType
     };
 
     Object(TypeId typeId) : mTypeId(typeId) {}

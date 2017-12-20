@@ -49,6 +49,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
+#include <QString>
 #include <QVector>
 #include <QXmlStreamReader>
 
@@ -101,6 +102,7 @@ private:
                            Map::LayerDataFormat layerDataFormat,
                            QStringRef encoding,
                            QRect bounds);
+    void readTileLayerCellProperties(TileLayer &tileLayer);
     void decodeBinaryLayerData(TileLayer &tileLayer,
                                const QByteArray &data,
                                Map::LayerDataFormat format,
@@ -729,11 +731,40 @@ TileLayer *MapReaderPrivate::readTileLayer()
             tileLayer->mergeProperties(readProperties());
         else if (xml.name() == QLatin1String("data"))
             readTileLayerData(*tileLayer);
+        else if (xml.name() == QLatin1String("tileproperties"))
+            readTileLayerCellProperties(*tileLayer);
         else
             readUnknownElement();
     }
 
     return tileLayer;
+}
+
+void MapReaderPrivate::readTileLayerCellProperties(TileLayer &tileLayer)
+{
+    //Note: the naming scheme of "tileproperties" and "tile" due to compatibility with java port.
+    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("tileproperties"));
+
+    const QXmlStreamAttributes atts = xml.attributes();
+
+    while (xml.readNextStartElement()) {
+        if (xml.name() != QLatin1String("tile")) {
+            readUnknownElement();
+            continue;
+        }
+
+        //FIXME: make sure that the coordinates are valid integers
+        const int x = atts.value(QLatin1String("x")).toString().toInt();
+        const int y = atts.value(QLatin1String("y")).toString().toInt();
+
+        while (xml.readNextStartElement()) {
+            if (xml.name() == QLatin1String("properties"))
+                //FIXME: something less hacky than removing const qualifier
+                const_cast<Cell&>(tileLayer.cellAt(x, y)).mergeProperties(readProperties());
+            else
+                readUnknownElement();
+        }
+    }
 }
 
 void MapReaderPrivate::readTileLayerData(TileLayer &tileLayer)
